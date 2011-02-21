@@ -89,6 +89,8 @@ private:
     inline unsigned _moveRight (unsigned& mask);
     inline unsigned _moveRightSyllable (unsigned& mask);
     inline unsigned _moveEnd (unsigned& mask);
+
+    void deleteFromTo (unsigned fromPos, unsigned toPos);
 };
 
 #endif

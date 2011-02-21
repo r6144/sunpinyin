@@ -44,6 +44,8 @@
 
 #include "imi_keys.h"
 
+#include <cassert>
+
 CIMIClassicView::CIMIClassicView()
     :CIMIView(), m_cursorFrIdx(0), m_candiFrIdx(0),
      m_candiPageFirst(0), m_numeric_mode(false)
@@ -440,31 +442,44 @@ CIMIClassicView::_insert (unsigned keyvalue, unsigned &changeMasks)
     changeMasks |= PREEDIT_MASK | CANDIDATE_MASK;
 }
 
+// fromPos and toPos are cursor positions
+// NOTE: Does not adjust the current cursor location
+void
+CIMIClassicView::deleteFromTo (unsigned fromPos, unsigned toPos)
+{
+    assert(fromPos <= toPos);
+    unsigned nerase = toPos - fromPos;
+    if (toPos == m_pIC->getLastFrIdx()) {
+	for (unsigned i = 0; i < nerase; ++i) m_pPySegmentor->pop();
+    } else {
+	// somehow deleteAt with backward==true will erase the correct character...
+	for (unsigned i = 0; i < nerase; ++i) m_pPySegmentor->deleteAt(fromPos, true);
+    }
+}
+
+
 void
 CIMIClassicView::_erase (bool backward, unsigned &changeMasks)
 {
-    if (backward) {
+    if (backward && m_backspaceCancel && m_candiFrIdx > 0) {
         // if possible to cancel the last selection
-        if (m_backspaceCancel) {
-            if (m_candiFrIdx > 0) {
-                changeMasks |= CANDIDATE_MASK | PREEDIT_MASK | KEYEVENT_USED;
-                m_candiFrIdx = m_pIC->cancelSelection(m_candiFrIdx, true);
-                _getCandidates();
-                return;
-            }
-        }
-        if (m_cursorFrIdx == m_pIC->getLastFrIdx())
-            m_pPySegmentor->pop();
-        else if (m_cursorFrIdx > 0)
-            m_pPySegmentor->deleteAt(m_cursorFrIdx-1, backward);
-        else
-            return;
-        _moveLeft(changeMasks, true);
+	changeMasks |= CANDIDATE_MASK | PREEDIT_MASK | KEYEVENT_USED;
+	m_candiFrIdx = m_pIC->cancelSelection(m_candiFrIdx, true);
+	_getCandidates();
+	return;
+    }
+    if (backward) {
+	if (m_cursorFrIdx == 0) return;
+	// Delete the part of the current syllable before the cursor, un-convert the previous
+	// character if necessary (in _moveLeftSyllable).
+	unsigned old_cursor = m_cursorFrIdx, new_cursor = _moveLeftSyllable(changeMasks, true);
+	// old_cursor and new_cursor are the number of characters before the cursor
+	deleteFromTo(new_cursor, old_cursor);
     } else {
-        if (m_cursorFrIdx < m_pIC->getLastFrIdx ())
-            m_pPySegmentor->deleteAt(m_cursorFrIdx-1, backward);
-        else
-            return;
+	if (m_cursorFrIdx == m_pIC->getLastFrIdx()) return;
+	unsigned old_cursor = m_cursorFrIdx, new_cursor = _moveRightSyllable(changeMasks);
+	deleteFromTo(old_cursor, new_cursor);
+	m_cursorFrIdx = old_cursor;
     }
     
     if (m_pIC->buildLattice (m_pPySegmentor))
