@@ -90,17 +90,17 @@ init ()
     SunPinyinConfig::set_config(config);
 
     
-    component = ibus_component_new ("org.freedesktop.IBus.SunPinyin",
-                                    "SunPinyin2",
+    component = ibus_component_new ("org.freedesktop.IBus.SunPinyinMy",
+                                    "SunPinyin2-my",
                                     "0.1.0",
                                     "LGPL/CDDL",
                                     "Kov Chai <tchaikov@gmail.com>",
                                     "http://code.google.com/p/sunpinyin/",
                                     "",
-                                    "ibus-sunpinyin");
+                                    "ibus-sunpinyin"); // We don't change the text domain name for now
     ibus_component_add_engine (component,
-                               ibus_engine_desc_new ("sunpinyin",
-                                                     "SunPinyin",
+                               ibus_engine_desc_new ("sunpinyin-my",
+                                                     "SunPinyin-my",
                                                      _("Simplified Chinese Input Method developed by SUN"),
                                                      "zh_CN",
                                                      "LGPL/CDDL",
@@ -109,10 +109,10 @@ init ()
                                                      "en"));
     
     factory = ibus_factory_new (ibus_bus_get_connection (bus));
-    ibus_factory_add_engine (factory, "sunpinyin", IBUS_TYPE_SUNPINYIN_ENGINE);
+    ibus_factory_add_engine (factory, "sunpinyin-my", IBUS_TYPE_SUNPINYIN_ENGINE);
 
     if (by_ibus) {
-        ibus_bus_request_name (bus, "org.freedesktop.IBus.SunPinyin", 0);
+        ibus_bus_request_name (bus, "org.freedesktop.IBus.SunPinyinMy", 0);
     } else {
         ibus_bus_register_component (bus, component);
     }
@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
     
     GOptionContext* context;
     context = g_option_context_new ("- ibus sunpinyin engine component");
-    g_option_context_add_main_entries (context, entries, "ibus-sunpinyin");
+    g_option_context_add_main_entries (context, entries, "ibus-sunpinyin"); // "ibus-sunpinyin" is also the translation domain
     GError *error = NULL;
     if (!g_option_context_parse (context, &argc, &argv, &error)) {
         g_print ("Option parsing failed: %s\n", error->message);

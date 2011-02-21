@@ -51,7 +51,7 @@
 #include "pinyin/hunpin_seg.h"
 
 #ifndef SUNPINYIN_USERDATA_DIR_PREFIX
-#define SUNPINYIN_USERDATA_DIR_PREFIX ".sunpinyin"
+#define SUNPINYIN_USERDATA_DIR_PREFIX ".sunpinyin-my"
 #endif
 
 struct CSimplifiedChinesePolicy : public IConfigurable

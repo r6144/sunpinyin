@@ -576,7 +576,7 @@ SunPinyinEngine::update_user_data_dir()
 {
     stringstream user_data_dir;
     user_data_dir << g_get_home_dir()
-                  << G_DIR_SEPARATOR_S << ".sunpinyin";
+                  << G_DIR_SEPARATOR_S << ".sunpinyin-my";
     ASimplifiedChinesePolicy::instance().setUserDataDir(user_data_dir.str());
 }
 
