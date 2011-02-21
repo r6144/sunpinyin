@@ -133,7 +133,7 @@ sub = {'@LIBEXEC_DIR@': bin_dir,
        '@ICON_DIR@': icons_dir,
        '@VERSION@' : version,
        '@INSTALL_PREFIX@': env['PREFIX']}
-env.Substfile('data/sunpinyin.xml.in', SUBST_DICT=sub)
+env.Substfile('data/sunpinyin-my.xml.in', SUBST_DICT=sub)
 env.Substfile('setup/config.py.in', SUBST_DICT=sub)
 env.Substfile('setup/ibus-setup-sunpinyin.in', SUBST_DICT=sub)
 
@@ -160,7 +160,7 @@ def DoInstall():
                                 'icons/setup.svg',
                                 'icons/sunpinyin-logo.png'])
     component_target = env.Install(env['DATADIR'] + '/ibus/component',
-                                   'data/sunpinyin.xml')
+                                   'data/sunpinyin-my.xml')
     locale_targets = []
     for locale in locales:
         path = env['DATADIR'] + '/locale/%s/LC_MESSAGES/%s.mo' % \
