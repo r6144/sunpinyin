@@ -8,6 +8,12 @@ Todo:
     * improve the candidate selecting for user selections
     * new language bindings for slm, such as Java, and Ruby
     * leverage Sogou's dict and corpus
+    
+    * check for memory leaks
+    
+    * save the user history more regularly (not just at IC destroy time) and reliably (avoid races
+      between different IM engine instances running in the same directory, although this should
+      indicate a misconfiguration).  We can then increase the history size as well.
 
 In process:
 
