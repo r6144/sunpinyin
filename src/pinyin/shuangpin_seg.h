@@ -61,6 +61,8 @@ public:
 
     virtual unsigned updatedFrom () {return m_updatedFrom;}
 
+    virtual bool hasInvalid () { return m_hasInvalid; }
+
     void setGetFuzzySyllablesOp (CGetFuzzySyllablesOp<CPinyinData> *op) {m_pGetFuzzySyllablesOp = op;}
     
 private:

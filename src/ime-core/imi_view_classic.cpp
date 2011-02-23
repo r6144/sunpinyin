@@ -451,8 +451,16 @@ CIMIClassicView::_insert (unsigned keyvalue, unsigned &changeMasks)
     else
         m_pPySegmentor->insertAt (m_cursorFrIdx, keyvalue);
 
-    m_cursorFrIdx ++;
-
+#if 0
+    m_cursorFrIdx++;
+#else
+    if (! m_pPySegmentor->hasInvalid ()) m_cursorFrIdx ++;
+    else {
+	// Invalid pinyin found (mostly in shuangpin), undo
+	deleteFromTo(m_cursorFrIdx, m_cursorFrIdx + 1);
+    }
+#endif
+    
     if (m_pIC->buildLattice (m_pPySegmentor))
         _getCandidates ();
 

@@ -89,6 +89,8 @@ struct IPySegmentor
     virtual void     notify_best_segpath (std::vector<unsigned>& seg_path) {}
 
     virtual unsigned updatedFrom () = 0;
+
+    virtual bool hasInvalid () { return false; }
 };
 
 #endif
