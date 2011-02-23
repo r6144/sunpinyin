@@ -184,6 +184,9 @@ CIMIClassicView::onKeyEvent(const CKeyEvent& key)
         _deleteCandidate (sel, changeMasks);
         goto PROCESSED;
 
+    } else if (modifiers == IM_CTRL_MASK && keycode == IM_VK_BACK_SPACE) {
+	changeMasks |= KEYEVENT_USED;
+	_cancelSelection (changeMasks);
     } else if ((modifiers & (IM_CTRL_MASK | IM_ALT_MASK | IM_SUPER_MASK | IM_RELEASE_MASK)) == 0) {
         if ((keyvalue >= '0' && keyvalue <= '9') &&
                    (m_candiWindowSize >= 10 || keyvalue < ('1' + m_candiWindowSize))) { // try to make selection
@@ -473,15 +476,19 @@ CIMIClassicView::deleteFromTo (unsigned fromPos, unsigned toPos)
 
 
 void
-CIMIClassicView::_erase (bool backward, unsigned &changeMasks)
+CIMIClassicView::_cancelSelection (unsigned &changeMasks)
 {
-    if (backward && m_backspaceCancel && m_candiFrIdx > 0) {
-        // if possible to cancel the last selection
+    if (m_candiFrIdx > 0) {
+        // if possible, cancel the last selection
 	changeMasks |= CANDIDATE_MASK | PREEDIT_MASK | KEYEVENT_USED;
 	m_candiFrIdx = m_pIC->cancelSelection(m_candiFrIdx, true);
 	_getCandidates();
-	return;
     }
+}
+
+void
+CIMIClassicView::_erase (bool backward, unsigned &changeMasks)
+{
     if (backward) {
 	if (m_cursorFrIdx == 0) return;
 	// Delete the part of the current syllable before the cursor, un-convert the previous

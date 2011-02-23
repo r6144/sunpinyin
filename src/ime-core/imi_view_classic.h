@@ -74,6 +74,7 @@ private:
 
     inline void _insert (unsigned keyvalue, unsigned& mask);
     inline void _erase (bool backward, unsigned& mask);
+    void _cancelSelection (unsigned& mask);
 
     inline void _getCandidates ();
     inline void _makeSelection (int candiIdx, unsigned& mask);
