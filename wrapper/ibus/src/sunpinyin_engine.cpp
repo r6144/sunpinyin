@@ -627,5 +627,7 @@ void
 SunPinyinEngine::update_candi_delete_key()
 {
     /* FIXME: need to get candi_delete_key from user's configuration */
-    m_hotkey_profile->setCandiDeleteKey(CKeyEvent(0, 0, IM_ALT_MASK));
+    // This is Ctrl+1 through Ctrl+0 (Alt+x is used by the window manager on my machine)
+    // Somehow this does not work yet...
+    m_hotkey_profile->setCandiDeleteKey(CKeyEvent(0, 0, IM_CTRL_MASK));
 }

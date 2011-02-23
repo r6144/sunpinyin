@@ -98,6 +98,9 @@ CIMIClassicView::updateWindows(unsigned mask)
 	while (cur_nword > 1) {
 	    // This won't be inefficient if the version of push_back() using an rvalue reference is used...
 	    m_tails.push_back(CCandidateSeq(words.begin(), words.begin() + cur_nword));
+	    // NOTE: Occasionally a multi-word sentence will coincide with a single word in the
+	    // candidate list.  We do not deal with this special case for now, although the original
+	    // code did.
 	    unsigned delta_nword = std::min(cur_nword / 8 + 1, cur_nword);
 	    cur_nword -= delta_nword;
 	}
