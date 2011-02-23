@@ -544,6 +544,27 @@ unsigned CIMIContext::getBestSentence (std::vector<unsigned>& result, unsigned s
     return nWordConverted;
 }
 
+// FIXME: Should eliminate duplicate code, although it would be slightly less efficient
+unsigned CIMIContext::getBestSentence (CCandidateSeq& result, unsigned start, unsigned end)
+{
+    result.clear();
+
+    if (UINT_MAX == end) end = m_tailIdx - 1;
+
+    while (end > start && m_lattice[end].m_bwType == CLatticeFrame::NO_BESTWORD)
+        end --;
+
+    unsigned i = end, nWordConverted = 0;
+    while (i > start) {
+        CLatticeFrame &fr = m_lattice[i];
+        result.insert (result.begin(), fr.m_bestWord);
+        i = fr.m_bestWord.m_start;
+        nWordConverted ++;
+    }
+
+    return nWordConverted;
+}
+
 struct TCandiPair {
     CCandidate                      m_candi;
     TCandiRank                      m_Rank;

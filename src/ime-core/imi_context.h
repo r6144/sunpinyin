@@ -73,6 +73,10 @@ typedef std::vector<CLatticeFrame>  CLattice;
 typedef std::vector<CCandidate>     CCandidates;
 typedef CCandidates::iterator       CCandidatesIter;
 
+// This is for a sequence of candidates forming a sentence
+typedef std::vector<CCandidate>     CCandidateSeq;
+typedef CCandidates::iterator       CCandidateSeqIter;
+
 union TCandiRank {
 public:
     bool
@@ -259,6 +263,7 @@ public:
 
     unsigned getBestSentence (wstring& result, unsigned start=0, unsigned end=UINT_MAX);
     unsigned getBestSentence (std::vector<unsigned>& result, unsigned start=0, unsigned end=UINT_MAX);
+    unsigned getBestSentence (CCandidateSeq& result, unsigned start=0, unsigned end=UINT_MAX);
 
     void getCandidates (unsigned frIdx, CCandidates& result);
     unsigned cancelSelection (unsigned frIdx, bool doSearch=true);
@@ -285,7 +290,7 @@ protected:
     inline void _backTraceBestPaths ();
     inline void _clearBestPaths ();
 
-    inline const TWCHAR *_getWstr (unsigned wid);
+    const TWCHAR *_getWstr (unsigned wid);
 
     inline void _saveUserDict ();
     inline void _saveHistoryCache ();

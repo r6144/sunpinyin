@@ -45,6 +45,7 @@
 #include "imi_keys.h"
 
 #include <cassert>
+#include <sstream>
 
 CIMIClassicView::CIMIClassicView()
     :CIMIView(), m_cursorFrIdx(0), m_candiFrIdx(0),
@@ -71,7 +72,7 @@ CIMIClassicView::clearIC(void)
         m_pIC->clear ();
         m_pPySegmentor->clear ();
         m_candiList.clear ();
-        m_tailSentence.clear ();
+        m_tails.clear ();
         return PREEDIT_MASK | CANDIDATE_MASK;
     }
     return 0;
@@ -90,9 +91,16 @@ CIMIClassicView::updateWindows(unsigned mask)
     }
 
     if ((mask & PREEDIT_MASK) || (mask & CANDIDATE_MASK)) {
-        unsigned word_num = m_pIC->getBestSentence (m_tailSentence, m_candiFrIdx);
-        if (word_num <= 1 || (!m_candiList.empty() && m_tailSentence == m_candiList[0].m_cwstr))
-            m_tailSentence.clear ();
+	CCandidateSeq words;
+	m_pIC->getBestSentence (words, m_candiFrIdx);
+	unsigned nword = words.size(), cur_nword = nword;
+	m_tails.clear();
+	while (cur_nword > 1) {
+	    // This won't be inefficient if the version of push_back() using an rvalue reference is used...
+	    m_tails.push_back(CCandidateSeq(words.begin(), words.begin() + cur_nword));
+	    unsigned delta_nword = std::min(cur_nword / 8 + 1, cur_nword);
+	    cur_nword -= delta_nword;
+	}
     }
 
     if (mask & CANDIDATE_MASK) {
@@ -150,7 +158,7 @@ CIMIClassicView::onKeyEvent(const CKeyEvent& key)
                  (m_pHotkeyProfile && m_pHotkeyProfile->isPageUpKey (key))) &&
                 !m_pIC->isEmpty() ) {
         changeMasks |= KEYEVENT_USED;
-        int sz = m_candiList.size() + ((m_tailSentence.size() > 0)?1:0);
+        int sz = m_candiList.size() + m_tails.size();
         if (sz > 0 && m_candiPageFirst > 0) {
             m_candiPageFirst -= m_candiWindowSize;
             if (m_candiPageFirst < 0) m_candiPageFirst = 0;
@@ -160,7 +168,7 @@ CIMIClassicView::onKeyEvent(const CKeyEvent& key)
                  (m_pHotkeyProfile && m_pHotkeyProfile->isPageDownKey (key))) &&
                 !m_pIC->isEmpty() ) {
         changeMasks |= KEYEVENT_USED;
-        int sz = m_candiList.size() + ((m_tailSentence.size() > 0)?1:0);
+        int sz = m_candiList.size() + m_tails.size();
         if (sz > 0 && m_candiPageFirst + m_candiWindowSize < sz) {
             m_candiPageFirst += m_candiWindowSize;
             changeMasks |= CANDIDATE_MASK;
@@ -290,7 +298,7 @@ CIMIClassicView::onCandidatePageRequest(int pgno, bool relative)
 
     if (!m_pIC->isEmpty()) {
         changeMasks |= KEYEVENT_USED;
-        int sz = m_candiList.size() + ((m_tailSentence.size() > 0)?1:0);
+        int sz = m_candiList.size() + m_tails.size();
         if (sz > 0) {
            lastpgidx = (sz-1)/m_candiWindowSize * m_candiWindowSize;
            if (relative == true) {
@@ -401,7 +409,7 @@ CIMIClassicView::getCandidateList(ICandidateList& cl, int start, int size)
     cl.clear();
     cl.reserve(size);
 
-    int tscount = (m_tailSentence.size() > 0)? 1: 0;
+    int tscount = m_tails.size();
     cl.setFirst (start);
     cl.setTotal (tscount + m_candiList.size());
 
@@ -410,8 +418,11 @@ CIMIClassicView::getCandidateList(ICandidateList& cl, int start, int size)
 
     //Loop used for future n-best sentence candidates usage
     for (; start < tscount && size > 0; ++start, --size) {
-        css.push_back (m_tailSentence);
-        cts.push_back (ICandidateList::BEST_TAIL);
+	const CCandidateSeq& tail = m_tails[start];
+	wstring str;
+	for (CCandidateSeq::const_iterator iter = tail.begin(); iter != tail.end(); ++iter) str += iter->m_cwstr;
+        css.push_back (str);
+        cts.push_back ((start == 0)?(ICandidateList::BEST_TAIL):(ICandidateList::OTHER_BEST_TAIL));
     }
 
     start -= tscount;
@@ -630,18 +641,24 @@ void
 CIMIClassicView::_makeSelection (int candiIdx, unsigned& mask)
 {
     candiIdx += m_candiPageFirst;
-    if (!m_tailSentence.empty ()) --candiIdx;
 
-    if (candiIdx < 0) {
+    bool selected = false;
+    if (candiIdx < m_tails.size()) {
         // commit the best sentence
-        mask |= PREEDIT_MASK | CANDIDATE_MASK;
-        _doCommit ();
-        clearIC ();
-    } else if (candiIdx < m_candiList.size ()) {
-        mask |= PREEDIT_MASK | CANDIDATE_MASK;
+	CCandidateSeq& tail = m_tails [candiIdx];
+	for (CCandidateSeq::iterator iter = tail.begin(); iter != tail.end(); ++iter) {
+	    m_pIC->makeSelection (*iter);
+	    m_candiFrIdx = iter->m_end;
+	}
+	selected = true;
+    } else if (candiIdx -= m_tails.size(), candiIdx < m_candiList.size ()) {
         CCandidate& candi = m_candiList [candiIdx];
         m_pIC->makeSelection (candi);
         m_candiFrIdx = candi.m_end;
+	selected = true;
+    }
+    if (selected) {
+        mask |= PREEDIT_MASK | CANDIDATE_MASK;
         if (m_cursorFrIdx < m_candiFrIdx) m_cursorFrIdx = m_candiFrIdx;
 
         CLattice& lattice = m_pIC->getLattice ();
@@ -673,14 +690,11 @@ void
 CIMIClassicView::_deleteCandidate (int candiIdx, unsigned& mask)
 {
     candiIdx += m_candiPageFirst;
-    if (!m_tailSentence.empty ()) --candiIdx;
 
-    if (candiIdx < 0) {
-        // try to remove candidate 0 which is a calculated sentence
-        std::vector<unsigned> wids;
-        m_pIC->getBestSentence (wids, m_candiFrIdx);
-        m_pIC->removeFromHistoryCache(wids);
-    } else {
+    if (candiIdx < m_tails.size()) {
+	// This is a calculated sentence which might or might be in the history cache.  Removing it is difficult, so we don't try.
+	return;
+    } else if (candiIdx -= m_tails.size (), candiIdx < m_candiList.size ()) {
         // remove an ordinary candidate
         CCandidate& candi = m_candiList [candiIdx];
         m_pIC->deleteCandidate(candi);

@@ -41,6 +41,7 @@
 #include "portability.h"
 
 #include "imi_view.h"
+#include <vector>
 
 class CIMIClassicView : public CIMIView 
 {
@@ -69,7 +70,7 @@ private:
     bool        m_numeric_mode;
 
     CCandidates m_candiList;
-    wstring     m_tailSentence;
+    std::vector<CCandidateSeq> m_tails;
 
     inline void _insert (unsigned keyvalue, unsigned& mask);
     inline void _erase (bool backward, unsigned& mask);
