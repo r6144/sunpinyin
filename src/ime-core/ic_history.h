@@ -43,6 +43,7 @@
 #include <map>
 #include <deque>
 #include <set>
+#include <ctime>
 
 /**
 * A forget all history memory
@@ -153,6 +154,9 @@ public:
     bool
     saveToFile (const char *fname = NULL);
 
+    void
+    condSaveToFile (const char *fname = NULL);
+
     virtual void addStopWords (const std::set<unsigned int>& stopWords);
     virtual void initStopWords ();
 
@@ -164,8 +168,8 @@ protected:
     typedef std::map<TUnigram, int>               TUnigramPool;
     typedef std::deque<TWordId>                   TContextMemory;
 
-    static const size_t contxt_memory_size;
-    static const double focus_memory_ratio;
+    static const size_t contxt_memory_size, focus_memory_size;
+    static const int focus_memory_freq;
 
     TContextMemory          m_memory;
     TUnigramPool            m_unifreq;
@@ -173,6 +177,8 @@ protected:
 
     std::string             m_history_path;
     std::set<unsigned int>  m_stopWords;
+
+    std::time_t m_lastSaveTime;
 
 protected:
     double pr(TBigram& bg);

@@ -114,8 +114,8 @@ void
 CSimplifiedChinesePolicy::destroyContext (CIMIContext *context)
 {
     assert(context != NULL);
-    saveUserHistory();
     delete context;
+    m_historyCache.condSaveToFile();
 }
 
 string_pairs

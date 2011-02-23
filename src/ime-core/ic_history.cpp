@@ -55,11 +55,12 @@ CICHistory::~CICHistory()
 }
 
 static bool bBigramHistoryInited = false;
-const size_t  CBigramHistory::contxt_memory_size = 8192;
-const double  CBigramHistory::focus_memory_ratio = 0.05;
+const size_t  CBigramHistory::contxt_memory_size = 262144;
+const size_t  CBigramHistory::focus_memory_size = 400;
+const int  CBigramHistory::focus_memory_freq = 20;
 
 //FIXME: CBigramHistory need to be thread safe
-CBigramHistory::CBigramHistory() : m_memory(), m_unifreq(), m_bifreq()
+CBigramHistory::CBigramHistory() : m_memory(), m_unifreq(), m_bifreq(), m_lastSaveTime(time(NULL))
 {
     initStopWords();
 }
@@ -102,6 +103,7 @@ bool CBigramHistory::memorize(unsigned* its_wid, unsigned* ite_wid)
         incUniFreq(bigram.second);
         incBiFreq(bigram);
     }
+    condSaveToFile();
     return true;
 }
 
@@ -188,7 +190,15 @@ bool CBigramHistory::loadFromFile (const char *fname)
         free (buf);
     }  
     close (fd);
+    m_lastSaveTime = time(NULL);
     return suc;
+}
+
+void CBigramHistory::condSaveToFile(const char *fname)
+{
+    time_t cur_time = time(NULL);
+    if (cur_time - m_lastSaveTime > 60 || cur_time - m_lastSaveTime < 0)
+	saveToFile(fname);
 }
 
 bool CBigramHistory::saveToFile(const char *fname)
@@ -207,6 +217,7 @@ bool CBigramHistory::saveToFile(const char *fname)
         }
         free(buf);
     }
+    m_lastSaveTime = time(NULL); // even if we failed, as retrying isn't going to help anyway.
     return suc;
 }
 
@@ -260,9 +271,9 @@ int  CBigramHistory::uniFreq(TUnigram& ug)
         if (it != m_unifreq.end()) {
             freq = it->second;
             TContextMemory::reverse_iterator rit = m_memory.rbegin();
-            for (int i = 0; rit != m_memory.rend() && i < contxt_memory_size * focus_memory_ratio; i++) {
+            for (int i = 0; rit != m_memory.rend() && i < focus_memory_size; i++) {
                 if (*rit == ug)
-                    freq += 1.0 / focus_memory_ratio;
+		    freq += focus_memory_freq;
                 *rit++;
             }
         }
@@ -282,9 +293,9 @@ int  CBigramHistory::biFreq(TBigram& bg)
             freq =  it->second;
             TContextMemory::reverse_iterator re = m_memory.rbegin();
             TContextMemory::reverse_iterator rs = re + 1;
-            for (int i = 0; rs != m_memory.rend() && i < contxt_memory_size * focus_memory_ratio; i++) {
+            for (int i = 0; rs != m_memory.rend() && i < focus_memory_size; i++) {
                 if (*rs == bg.first && *re == bg.second)
-                    freq += 1.0 / focus_memory_ratio;
+		    freq += focus_memory_freq;
                 ++rs; ++re;
             }
         }

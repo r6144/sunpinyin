@@ -11,10 +11,6 @@ Todo:
     
     * check for memory leaks
     
-    * save the user history more regularly (not just at IC destroy time) and reliably (avoid races
-      between different IM engine instances running in the same directory, although this should
-      indicate a misconfiguration).  We can then increase the history size as well.
-
 In process:
 
     * Python binding for SunPinyin's SLM [80%]
