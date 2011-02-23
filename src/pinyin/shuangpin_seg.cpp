@@ -280,6 +280,13 @@ unsigned CShuangpinSegmentor::_push (unsigned ch)
     const int len = m_pystr.size();
     if (m_hasInvalid) {
         startFrom = len - 1;
+	if (m_segs.size() >= 1) {
+	    TSegment& last_seg = m_segs.back();
+	    if (last_seg.m_type == IPySegmentor::INVALID && last_seg.m_start + last_seg.m_len == startFrom) {
+		++last_seg.m_len; // Try to keep the invalid segment as a whole so that they can be deleted more easily
+		goto RETURN;
+	    }
+	}
         m_segs.push_back (TSegment (ch, startFrom, 1, IPySegmentor::INVALID));
         goto RETURN;
     }
