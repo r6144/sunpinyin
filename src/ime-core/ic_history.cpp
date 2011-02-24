@@ -259,7 +259,7 @@ double CBigramHistory::pr(TBigram& bigram)
 	eff_size += (contxt_memory_size_low - eff_size) / 10;
     pr += 0.32*double(uf1)/double(eff_size+0.5);
 
-#if 1
+#if 0
     if (pr != 0)
         fprintf(stderr, "uf0:%d bf:%d uf1:%d pr(%d|%d):%lf\n", uf0, bf, uf1,
                 bigram.second, bigram.first, pr);

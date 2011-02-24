@@ -40,7 +40,6 @@
 #endif
 
 #include <algorithm>
-#include <iostream>
 #include "imi_defines.h"
 #include "imi_context.h"
 
@@ -428,8 +427,7 @@ void CIMIContext::_transferBetween (unsigned start, unsigned end, TLexiconState*
         if (m_pHistory) {
             unsigned history[2] = {m_pModel->lastWordId(it->m_slmState), wid};
             double hpr = m_pHistory->pr(history, history+2);
-	    //std::cerr << "(" << _getWstr(history[0]) << "+" << _getWstr(history[1]) << " ts=" << ts << " hpr=" << hpr << ")" << std::endl;
-	    fprintf(stderr, "(%d+%d ts=%0.6f hpr=%0.6f)\n", history[0], history[1], ts, hpr);
+	    //fprintf(stderr, "(%d+%d ts=%0.6f hpr=%0.6f)\n", history[0], history[1], ts, hpr);
             ts = weight_s * ts + weight_h*hpr;
         }
 
