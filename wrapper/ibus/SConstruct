@@ -65,6 +65,8 @@ opts.Save('configure.conf', env)
 if GetOption('rpath') is not None:
     env.Append(LINKFLAGS='-Wl,-R -Wl,%s' % GetOption('rpath'))
 
+env.Append(LINKFLAGS='-ltcmalloc_and_profiler')
+
 envvar = [('CC', 'CC'),
           ('CXX', 'CXX'),
           ('CFLAGS', 'CFLAGS'),
