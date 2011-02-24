@@ -3,7 +3,7 @@
 <component>
   <name>org.freedesktop.IBus.SunPinyinMy</name>
   <description>SunPinyin-my Component</description>
-  <exec>env HEAPPROFILE=/tmp/sunpinyin-my.hprof HEAP_PROFILE_INUSE_INTERVAL=1048576 @LIBEXEC_DIR@/ibus-engine-sunpinyin --ibus</exec>
+  <exec>@LIBEXEC_DIR@/ibus-engine-sunpinyin --ibus</exec>
   <version>@VERSION@</version>
   <author>Kov Chai &lt;tchaikov@gmail.com&gt;</author>
   <license>LGPL</license>
