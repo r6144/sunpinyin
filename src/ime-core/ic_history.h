@@ -168,7 +168,7 @@ protected:
     typedef std::map<TUnigram, int>               TUnigramPool;
     typedef std::deque<TWordId>                   TContextMemory;
 
-    static const size_t contxt_memory_size, focus_memory_size;
+    static const size_t contxt_memory_size, contxt_memory_size_low, focus_memory_size;
     static const int focus_memory_freq;
 
     TContextMemory          m_memory;

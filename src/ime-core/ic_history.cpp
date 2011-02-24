@@ -56,6 +56,8 @@ CICHistory::~CICHistory()
 
 static bool bBigramHistoryInited = false;
 const size_t  CBigramHistory::contxt_memory_size = 262144;
+// if the currently available context memory is smaller than contxt_memory_size_low, lower its weight
+const size_t  CBigramHistory::contxt_memory_size_low = 8192;
 const size_t  CBigramHistory::focus_memory_size = 400;
 const int  CBigramHistory::focus_memory_freq = 20;
 
@@ -252,7 +254,10 @@ double CBigramHistory::pr(TBigram& bigram)
 
     double pr = 0.0;
     pr += 0.68*double(bf)/double(uf0+0.5);
-    pr += 0.32*double(uf1)/double(m_memory.size() + (contxt_memory_size-m_memory.size())/10);
+    size_t eff_size = m_memory.size();
+    if (eff_size < contxt_memory_size_low)
+	eff_size += (contxt_memory_size_low - eff_size) / 10;
+    pr += 0.32*double(uf1)/double(eff_size+0.5);
 
 #ifdef DEBUG
     if (pr != 0)
