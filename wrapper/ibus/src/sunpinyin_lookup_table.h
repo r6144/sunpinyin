@@ -61,15 +61,6 @@ public:
     
 private:
     /**
-     * set the candidate in lookup table
-     * @param cl the candidate list including all available candidates in current page
-     * @param index the candidate's index in page
-     * @param begin the begin position in candidates
-     * @return the length of candidate string
-     */
-    int append_candidate(const ICandidateList& cl, int index, int begin);
- 
-    /**
      * get the index of current page's start point
      * @return the index where current page starts
      */
