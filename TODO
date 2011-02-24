@@ -8,8 +8,16 @@ Todo:
     * improve the candidate selecting for user selections
     * new language bindings for slm, such as Java, and Ruby
     * leverage Sogou's dict and corpus
+
+    * more efficient focus handling in the history cache; use something similar to the 1/x model for history weighting.
     
-    * check for memory leaks
+    * 的 has a huge ts in the language model (e.g. in 欣喜地, the third character can be 的 with
+      ts=0.178), so the history-derived probability of 地 must be at least as high in order to beat
+      it.  However, only the 0.68 fraction of that probability is useful, and that probability is
+      further diluted by other possible words (including DCWID) that could follow.  Currently we
+      simply increase the history power to the maximum (0.50), but maybe it is better to adjust the
+      weighting algorithm of the different probabilities, at least to account for the priors
+      properly.
     
 In process:
 
