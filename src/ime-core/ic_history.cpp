@@ -259,7 +259,7 @@ double CBigramHistory::pr(TBigram& bigram)
 	eff_size += (contxt_memory_size_low - eff_size) / 10;
     pr += 0.32*double(uf1)/double(eff_size+0.5);
 
-#ifdef DEBUG
+#if 1
     if (pr != 0)
         fprintf(stderr, "uf0:%d bf:%d uf1:%d pr(%d|%d):%lf\n", uf0, bf, uf1,
                 bigram.second, bigram.first, pr);
@@ -291,8 +291,8 @@ int  CBigramHistory::biFreq(TBigram& bg)
 {
     int freq = 0;
     //std::set<unsigned>::const_iterator ite = m_stopWords.end();
-    if (m_stopWords.find(bg.first) != m_stopWords.end()
-        && m_stopWords.find(bg.second) != m_stopWords.end()) {
+    if (m_stopWords.find(bg.first) == m_stopWords.end()
+        && m_stopWords.find(bg.second) == m_stopWords.end()) {
         TBigramPool::const_iterator it = m_bifreq.find(bg);
         if (it != m_bifreq.end()) {
             freq =  it->second;
